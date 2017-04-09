@@ -29,24 +29,26 @@ This totally breaks things. Be sure to have debugging disabled if you wish for t
 ## Cofigure the esp-link
 Connect to 192.168.4.1 and set the settings to this:
 
-RESET: gpio12
-ISP/Flash: disabled
-Conn LED: disabled
-Serial LED: GPIO14
-UART Pins: swapped
 
-[[trigger-schematic/flash-trigger_bb.png|alt=trigger_sch]] Connections
+|RESET     | gpio12   |
+|----------|----------|
+|ISP/Flash | disabled |
+|Conn LED  | disabled |
+|Serial LED| GPIO14   |
+|UART Pins | swapped  |
+
+![flash-trigger_bb](https://cloud.githubusercontent.com/assets/286973/24841090/76d5db74-1d30-11e7-9619-d6fc9f7f678d.png)
 
 ## connect up the arduino:
 5 wires:  BE SURE TO USE A 3.3V ARDUINO, or use a level shifter
 
-NAME   NODEMCU ESP8266 ARDUINO
-       PIN     PIN     PIN
-       GND    G               GND
-       VCC    3V              VCC
-       RESET  D6      GPIO12  RST
-       ESPRX  D7      GPIO13  TX
-       ESPTX  D8      GPIO15  RX
+|NAME    |NODEMCU PIN | ESP8266 pin | ARDUINO pin |      |
+|--------|--------|---------|---------|------|
+|        |GND     | G       |         | GND  |
+|        |VCC     | 3V      |         | VCC  |
+|        |RESET   | D6      | GPIO12  | RST  |
+|        |ESPRX   | D7      | GPIO13  | TX   |
+|        |ESPTX   | D8      | GPIO15  | RX   |
 
 ## Flash the arduino
 Be sure that nothing else (like a web browser) is accessing 192.168.4.1, or avrdude will break.
