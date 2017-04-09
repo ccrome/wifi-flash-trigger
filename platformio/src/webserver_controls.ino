@@ -16,17 +16,15 @@
 
 #include <ELClient.h>
 #include <ELClientWebServer.h>
-#include <ELClientRest.h>
 #include "Pages.h"
 
 // Initialize a connection to esp-link using the normal hardware serial port
 //
 // DEBUG is disasbled as
 // - packet logging is slow and UART receive buffer can overrun (HTML form submission)
-ELClient esp(&Serial, &Serial);
+ELClient esp(&Serial);
 
 // Initialize the Web-Server client
-ELClientRest rest(&esp);
 ELClientWebServer webServer(&esp);
 
 
@@ -46,22 +44,22 @@ void resetCb(void) {
 
 void setup()
 {
-  Serial.begin(38400);
+  Serial.begin(57600);
   
   esp.resetCb = resetCb;
   
   ledInit();
-  // userInit();
-  // voltageInit();
-  // flashInit();
+  userInit();
+  voltageInit();
+  flashInit();
   resetCb();
 }
 
 void loop()
 {
   esp.Process();
+  flashLoop();
   ledLoop();
-  // voltageLoop();
-  // flashLoop();
+  voltageLoop();
 }
 

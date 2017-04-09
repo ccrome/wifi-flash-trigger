@@ -1,87 +1,5 @@
 #include <ELClientWebServer.h>
 
-
-#define LED_PIN  13
-typedef enum {
-  UNKNOWN = 0,
-  SOUND,
-  LIGHT,
-} flash_mode_t;
-
-typedef struct {
-  flash_mode_t mode;
-  float initial_delay_ms;
-  int repeat_count;
-  float repeat_delay_ms;
-} flash_config_t;
-
-flash_config_t flash_config;
-
-void init_flash_config()
-{
-  memset(&flash_config, 0, sizeof(flash_config));
-  flash_config.initial_delay_ms = 10;
-}
-
-void flashLoop()
-{ 
-}
-
-// called at button pressing
-void flashButtonPressCb(char * button)
-{ 
- digitalWrite(LED_PIN, !digitalRead(LED_PIN)); // blink LED
-  String btn = button;
-  if( btn == F("btn_light") )
-    flash_config.mode = LIGHT;
-  else if( btn == F("btn_sound") )
-    flash_config.mode = SOUND;
-}
-
-// setting the value of a field
-//
-// handle data as fast as possible
-// - huge HTML forms can arrive in multiple packets
-// - if this method is slow, UART receive buffer may overrun
-void flashSetFieldCb(char * field)
-{
-  digitalWrite(LED_PIN, !digitalRead(LED_PIN)); // blink LED
-  String fld = field;
-  if( fld == F("initial_delay_ms") )
-    // flash_config.initial_delay_ms = webServer.getArgString();
-    ; 
-  else if( fld == F("repeat_count") )
-    flash_config.repeat_count = webServer.getArgInt();
-  else if( fld == F("repeat_count") )
-    flash_config.repeat_delay_ms = webServer.getArgFloat();
-}
-
-// called at page refreshing
-void flashRefreshCb(char * url)
-{
-}
-
-// called at page loading
-void flashLoadCb(char * url)
-{
-  digitalWrite(LED_PIN, !digitalRead(LED_PIN)); // blink LED
-  // webServer.setArgString(F("initial_delay_ms"), flash_config.initial_delay_ms);
-  // webServer.setArgFloat(F("repeat_delay_ms"),  flash_config.repeat_delay_ms);
-  // webServer.setArgInt(F("repeat_count"),     flash_config.repeat_count);
-  flashRefreshCb( url );
-}
-
-// FLASH setup code
-void flashInit()
-{
-  URLHandler *flashHandler = webServer.createURLHandler(F("/FlashConfig.html.json"));
-  flashHandler->buttonCb.attach(flashButtonPressCb);
-  flashHandler->setFieldCb.attach(flashSetFieldCb);
-  flashHandler->loadCb.attach(flashLoadCb);
-  flashHandler->refreshCb.attach(flashRefreshCb);
-}
-
-
 // the PIN to flash
 #define LED_PIN  13
 
@@ -192,12 +110,27 @@ String ledHistoryToLog()
 void ledButtonPressCb(char * button)
 {
   String btn = button;
-  if( btn == F("btn_light") )
-    flash_config.mode = LIGHT;
-  else if( btn == F("btn_sound") )
-    flash_config.mode = SOUND;
-  else
-    flash_config.mode = UNKNOWN;
+  if( btn == F("btn_on") )
+  {
+    if( blinking || digitalRead(LED_PIN) == false )
+      ledAddLog(LOG_SET_LED_ON);
+    blinking = 0;
+    digitalWrite(LED_PIN, true);
+  }
+  else if( btn == F("btn_off") )
+  {
+    if( blinking || digitalRead(LED_PIN) == true )
+      ledAddLog(LOG_SET_LED_OFF);
+    blinking = 0;
+    digitalWrite(LED_PIN, false);
+  }
+  else if( btn == F("btn_blink") )
+  {
+    if( !blinking )
+      ledAddLog(LOG_SET_LED_BLINKING);
+    blinking = 1;
+    blinking_next_ts = millis() + blinking_phase;
+  }
 }
 
 // setting the value of a field
@@ -205,29 +138,10 @@ void ledButtonPressCb(char * button)
 // handle data as fast as possible
 // - huge HTML forms can arrive in multiple packets
 // - if this method is slow, UART receive buffer may overrun
-
-int setCount = 0;
-int refreshCount = 0;
 void ledSetFieldCb(char * field)
 {
-  setCount ++;
   String fld = field;
   if( fld == F("frequency") )
-  {
-    int8_t oldf = blinking_frequency;
-    blinking_frequency = webServer.getArgInt();
-
-    blinking_period = 2000 / blinking_frequency;
-    blinking_phase = blinking_duty * blinking_period / 4;
-  
-    if( oldf != blinking_frequency )
-    {
-      ledAddLog(blinking_frequency);
-      if( blinking )
-        digitalWrite(LED_PIN, false);
-    }
-  }
-  else if( fld == F("frequency_x") )
   {
     int8_t oldf = blinking_frequency;
     blinking_frequency = webServer.getArgInt();
@@ -262,43 +176,38 @@ void ledSetFieldCb(char * field)
     if( oldp != blinking_duty )
       ledAddLog(LOG_DUTY_25_75 - 1 + blinking_duty);
   }
-//  else if( fld == F("initial_delay_ms") )
-//    flash_config.initial_delay_ms = webServer.getArgFloat();
-  else if( fld == F("repeat_count") )
-    flash_config.repeat_count = webServer.getArgInt();
-  else if( fld == F("repeat_count") )
-    flash_config.repeat_delay_ms = webServer.getArgFloat();
 }
 
 // called at page refreshing
 void ledRefreshCb(char * url)
 {
-  refreshCount++;
-  String status = "Status: (";
-  status += setCount;
-  status += ", ";
-  status += refreshCount;
-  status += ")";
-  status += "<br>";
-  switch (flash_config.mode)
-    {
-    case SOUND: status += "Sound Trigger Mode";    break;
-    case LIGHT: status += "Light Trigger Mode";    break;
-    default   : status += "Unknown mode., error!"; break;
-    }
-  status += "</br>";
-  status += "<br>initial_delay = " + String(flash_config.initial_delay_ms); 
-  status += "<br>repeat_count = " + String(flash_config.repeat_count); 
-  status += "<br>repeat_delay_ms = " + String(flash_config.repeat_delay_ms);
-  webServer.setArgString(F("text"), status.c_str());
+  if( blinking )
+    webServer.setArgString(F("text"), F("LED is blinking"));
+  else
+    webServer.setArgString(F("text"), digitalRead(LED_PIN) ? F("LED is turned on") : F("LED is turned off"));
+
+  String log = ledHistoryToLog();
+  webServer.setArgJson(F("led_history"), log.begin());
 }
 
 // called at page loading
 void ledLoadCb(char * url)
 {
   webServer.setArgInt(F("frequency"), blinking_frequency);
-  webServer.setArgInt(F("frequency_x"), (int)flash_config.initial_delay_ms+15);
-  // webServer.setArgString(F("initial_delay_ms"), flash_config.initial_delay_ms);
+
+  switch(blinking_duty)
+  {
+    case 1:
+      webServer.setArgString(F("duty"), F("25_75"));
+      break;
+    case 2:
+      webServer.setArgString(F("duty"), F("50_50"));
+      break;
+    case 3:
+      webServer.setArgString(F("duty"), F("75_25"));
+      break;
+  }
+  
   ledRefreshCb( url );
 }
 
@@ -306,7 +215,6 @@ void ledLoadCb(char * url)
 void ledInit()
 {
   // set mode to output and turn LED off
-  init_flash_config();
   pinMode(LED_PIN, OUTPUT);
   digitalWrite(LED_PIN, false);
   

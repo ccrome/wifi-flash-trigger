@@ -15,10 +15,17 @@
       </div>
       <div class="card">
         <h1>Frequency and duty</h1>
-        <form method="GET">
+        <form>
+          <b>Duty:</b><br/>
+          <input type="radio" name="duty" value="25_75">25% on 75% off</input><br/>
+          <input type="radio" name="duty" value="50_50">50% on 50% off</input><br/>
+          <input type="radio" name="duty" value="75_25">75% on 25% off</input><br/>
+        
           <b>Frequency:</b><br/>
-          <input name="frequency" min="0" max="100"><br/>
-          <input name="frequency_x" min="0" max="100"><br/>
+          <input type="range" name="frequency" min="1" max="25"><br/>
+          <input type="range" name="frequency_a" min="1" max="25"><br/>
+          <input type="range" name="frequency_b" min="1" max="25"><br/>
+          <input type="range" name="frequency_c" min="1" max="25"><br/>
           <input type="submit">
         </form>
       </div></div>

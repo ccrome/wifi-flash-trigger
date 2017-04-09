@@ -15,6 +15,17 @@ Flash to the esp8266: as per these instructions: https://github.com/jeelabs/esp-
 esptool.py --port /dev/ttyUSB0 --baud 230400 write_flash -fs 32m -ff 80m 0x00000 boot_v1.6.bin 0x1000 user1.bin 0x3FC000 esp_init_data_default.bin 0x3FE000 blank.bin
 
 
+## Warning
+The esp-link in the webserver_controls.ino has debugging enabled
+
+```ELClient esp(&Serial, &Serial);```
+
+This totally breaks things. Be sure to have debugging disabled if you wish for things to work
+```ELClient esp(&Serial);```
+
+
+
+
 ## Cofigure the esp-link
 Connect to 192.168.4.1 and set the settings to this:
 

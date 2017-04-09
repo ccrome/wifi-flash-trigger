@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 esp_ip = 192.168.4.1
 
-normal_baud = 38400
+normal_baud = 57600
 flash_baud  = 57600
 
 .PHONY: arduino_code arduino_flash esp_flash all flash
@@ -23,4 +23,5 @@ arduino_flash:  arduino_code
 
 esp_flash:
 	echo "Flashing the ESP8266"
-	cd esp-link-v3.0.alpha0 && esptool.py --port /dev/ttyUSB0 --baud 230400 write_flash -fs 32m -ff 80m 0x00000 boot_v1.6.bin 0x1000 user1.bin 0x3FC000 esp_init_data_default.bin 0x3FE000 blank.bin
+	cd /home/caleb/esp-link/firmware && esptool.py --port /dev/ttyUSB0 --baud 230400 write_flash -fs 32m -ff 80m 0x00000 boot_v1.6.bin 0x1000 user1.bin 0x3FC000 esp_init_data_default.bin 0x3FE000 blank.bin
+#	cd esp-link-v3.0.alpha0 && esptool.py --port /dev/ttyUSB0 --baud 230400 write_flash -fs 32m -ff 80m 0x00000 boot_v1.6.bin 0x1000 user1.bin 0x3FC000 esp_init_data_default.bin 0x3FE000 blank.bin
