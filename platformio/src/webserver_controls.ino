@@ -48,7 +48,7 @@ void setup()
   
   esp.resetCb = resetCb;
   
-  ledInit();
+  // ledInit();
   userInit();
   voltageInit();
   flashInit();
@@ -59,7 +59,7 @@ void loop()
 {
   esp.Process();
   flashLoop();
-  ledLoop();
+  // ledLoop();
   voltageLoop();
 }
 

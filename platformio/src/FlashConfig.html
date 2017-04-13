@@ -1,4 +1,5 @@
 <!-- EspLink will add header here -->
+<meta name="refresh-rate" content="500" />
 <div class="header">
   <h1>Flash configuration</h1>
 </div>
@@ -8,14 +9,16 @@
     <div class="pure-u-1 pure-u-md-1-2">
       <div class="card">
         <h1>Trigger Type</h1>
-        <button id="btn_light" type="button">Light Trigger</button>
-        <button id="btn_sound" type="button">Sound Trigger</button>
         <p id="text"></p>
       </div>
       <div class="card">
         <h1>Flash Settings</h1>
         <form>
           <b>Trigger Type</b><br/>
+          <select name="flash_mode">
+            <option value="light">Light</option>
+            <option value="sound">Sound</option>
+          </select><br/>
           <input name="initial_delay_ms">Initial Delay (ms)</input><br/>
           <input name="repeat_count">Flash Repeats</input><br/>
           <input name="repeat_delay_ms">Flash Repeat Delay</input><br/>
