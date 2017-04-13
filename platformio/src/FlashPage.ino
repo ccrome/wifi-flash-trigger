@@ -2,7 +2,7 @@
 // Use Timer 1 (16-bit) for input capture & output compare for high precision timing.
 #define CLK_FREQUENCY (8000000.0)
 // valid values are 1, 8, 64, 256, 1024
-#define TIMER1_PRESCALE (1024)
+#define TIMER1_PRESCALE (256)
 #define TIMER1_FREQUENCY (CLK_FREQUENCY/TIMER1_PRESCALE)
 
 #define INPUT_CAPTURE_PIN 8
@@ -57,7 +57,7 @@ void init_flash_config()
     memset(&flash_config, 0, sizeof(flash_config));
     flash_config.initial_delay_ms = 5.0;
     flash_config.repeat_delay_ms = 3.0;
-    flash_config.repeat_count = 4;
+    flash_config.repeat_count = 1;
     flash_config.hold_time_ms = .25; // on full power, speedlites can be up to 4ms...
     flash_config.extra_delay_ms = 200.0;
     flash_config.flash_output_pin = FLASH_OUTPUT_PIN ;
@@ -164,10 +164,6 @@ void disable_input_capture()
 
 void flash_sm_init()
 {
-    digitalWrite(12, 0);
-    digitalWrite(A0, 0);
-    digitalWrite(A1, 0);
-
     flash_trigger_off();
     flash_config.repeats_to_go = flash_config.repeat_count;
     flash_config.flash_sm = WAITING_FOR_TRIGGER;
@@ -179,12 +175,6 @@ void flash_sm_init()
 // FLASH setup code
 void flashInit()
 {
-    pinMode(12, OUTPUT);
-    pinMode(A0, OUTPUT);
-    pinMode(A1, OUTPUT);
-    digitalWrite(12, 0);
-    digitalWrite(A0, 0);
-    digitalWrite(A1, 0);
     init_flash_config();
     pinMode(FLASH_OUTPUT_PIN, OUTPUT);
     pinMode(INPUT_CAPTURE_PIN, INPUT);
@@ -228,10 +218,8 @@ unsigned int ms_2_counts(float milliseconds)
 // interrupt service routines
 ISR(TIMER1_COMPA_vect)
 {
-    digitalWrite(A0, 1);
-    digitalWrite(A1, 1);
     int set_trigger = 0;
-    unsigned int trigger_time =  TCNT1;
+    unsigned int trigger_time =  OCR1A;
     switch (flash_config.flash_sm) {
     case IDLE:
         // This is an error
@@ -268,6 +256,7 @@ ISR(TIMER1_COMPA_vect)
     case EXTRA_DELAY:
         // extra delay is complete
         flash_sm_init();
+        digitalWrite(LED_PIN,0); // blink LED
         break;
     }
     if (flash_config.flash_sm != WAITING_FOR_TRIGGER) {
@@ -279,7 +268,6 @@ ISR(TIMER1_COMPA_vect)
         else
             flash_trigger_off();
     }
-    digitalWrite(A1, 0);
 }
 ISR(TIMER1_COMPB_vect)
 {
