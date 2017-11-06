@@ -1,0 +1,3 @@
+[submodule "el-client"]
+path=platformio/lib/el-client
+url=https://github.com/jeelabs/el-client.git
